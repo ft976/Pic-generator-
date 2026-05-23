@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Loader2, Sparkles, Download, Settings, Send, Bot, User, MessageSquare, Plus, Trash2, Menu, X, AlertOctagon, ImageIcon, Paperclip, Info, Square, Github, Linkedin, FileText, Code } from 'lucide-react';
+import fluxGenLogo from './assets/images/flux_gen_logo_1779525932966.png';
 
 type Message = {
   id: string;
@@ -65,6 +66,7 @@ export default function App() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const availableModels = [
     { id: 'flux.1-schnell', name: 'FLUX.1 Schnell' },
@@ -148,6 +150,9 @@ export default function App() {
     setInput('');
     setReferenceImage(null);
     setIsGenerating(true);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
 
     const userMessageTimeId = Date.now().toString();
     const assistantMessageId = (Date.now() + 1).toString();
@@ -251,7 +256,8 @@ export default function App() {
       <aside className={`absolute md:relative z-40 h-full w-[80%] md:w-72 bg-zinc-900/80 backdrop-blur-xl border-r border-zinc-800 flex flex-col transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] md:translate-x-0'}`}>
         <div className="p-5 border-b border-zinc-800 flex justify-between items-center shrink-0">
           <span className="flex items-center gap-2 font-display font-semibold tracking-wide text-zinc-100">
-            <ImageIcon className="w-5 h-5 text-indigo-400"/> FLUX GEN
+            <img src={fluxGenLogo} alt="FLUX GEN Logo" className="w-6 h-6 rounded border border-indigo-500/20 shadow-[0_0_12px_rgba(99,102,241,0.2)]" referrerPolicy="no-referrer" />
+            FLUX GEN
           </span>
           <button className="md:hidden p-1.5 text-zinc-400 hover:text-zinc-100 transition-colors rounded-md hover:bg-zinc-800" onClick={() => setIsSidebarOpen(false)}>
             <X className="w-5 h-5"/>
@@ -297,17 +303,17 @@ export default function App() {
       <main className="flex-1 h-full flex flex-col bg-zinc-950 relative z-10 w-full overflow-hidden">
         
         {/* Header Bar */}
-        <header className="shrink-0 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md p-4 flex items-center justify-between gap-4 z-10 w-full sticky top-0">
-          <div className="flex items-center gap-3 w-1/3">
-            <button className="md:hidden p-2 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800/50 transition-colors" onClick={() => setIsSidebarOpen(true)}>
+        <header className="shrink-0 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md p-4 flex items-center justify-between gap-2 z-10 w-full sticky top-0">
+          <div className="flex items-center gap-2 flex-shrink min-w-0">
+            <button className="md:hidden p-2 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800/50 transition-colors shrink-0" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-5 h-5"/>
             </button>
-            <div className="hidden md:flex items-center gap-2 truncate text-sm font-medium text-zinc-400">
+            <div className="hidden md:block truncate text-sm font-medium text-zinc-400 max-w-[200px] lg:max-w-[400px]">
               {currentChat.title}
             </div>
           </div>
           
-          <div className="flex-1 flex justify-end items-center gap-2 sm:gap-3">
+          <div className="flex justify-end items-center gap-1 sm:gap-2 shrink-0">
             <button 
               type="button"
               onClick={() => setChatToDelete(currentChatId)}
@@ -316,12 +322,12 @@ export default function App() {
             >
               <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 flex-shrink min-w-0">
-              <Settings className="w-4 h-4 text-zinc-400 shrink-0" />
+            <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[130px] sm:max-w-xs">
+              <Settings className="hidden sm:block w-4 h-4 text-zinc-400 shrink-0" />
               <select 
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="appearance-none bg-transparent text-sm font-medium text-zinc-200 cursor-pointer outline-none focus:ring-0 pr-4 truncate w-full"
+                className="appearance-none bg-transparent text-xs sm:text-sm font-medium text-zinc-200 cursor-pointer outline-none focus:ring-0 pr-4 sm:pr-4 truncate w-full"
               >
                 {availableModels.map(m => (
                   <option key={m.id} value={m.id} className="bg-zinc-900">{m.name}</option>
@@ -427,7 +433,7 @@ export default function App() {
                     )}
                     
                     {message.content && (
-                      <div className={`text-[15px] leading-relaxed ${message.isError ? 'text-red-400 font-medium' : 'text-zinc-200'}`}>
+                      <div className={`text-[15px] leading-relaxed whitespace-pre-wrap break-words min-w-0 font-sans ${message.isError ? 'text-red-400 font-medium' : 'text-zinc-200'}`}>
                         {message.content}
                       </div>
                     )}
@@ -509,11 +515,16 @@ export default function App() {
                 onChange={handleImageUpload}
               />
               <textarea
+                ref={textareaRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="Describe what you want to see..."
-                className="w-full bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-2xl py-3.5 pl-14 pr-16 text-[15px] font-sans text-zinc-100 max-h-[200px] min-h-[56px] outline-none focus:border-zinc-700 focus:bg-zinc-900 transition-all resize-none shadow-lg placeholder:text-zinc-500"
+                className="w-full bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-2xl py-3.5 pl-14 pr-16 text-[15px] font-sans text-zinc-100 max-h-[200px] min-h-[56px] outline-none focus:border-zinc-700 focus:bg-zinc-900 transition-all resize-none shadow-lg placeholder:text-zinc-500 will-change-transform overflow-y-auto"
                 spellCheck="false"
                 rows={1}
                 disabled={isGenerating}
