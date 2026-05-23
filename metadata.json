@@ -1,0 +1,6 @@
+{
+  "name": "Flux Image Generator",
+  "description": "A high-fidelity text-to-image generator powered by NVIDIA Flux models.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
