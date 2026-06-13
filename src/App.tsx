@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2, Sparkles, Download, Settings, Send, Bot, User, MessageSquare, Plus, Trash2, Menu, X, AlertOctagon, ImageIcon, Paperclip, Info, Square, Github, Linkedin, FileText, Code } from 'lucide-react';
+import { Loader2, Sparkles, Download, Settings, Send, Bot, User, MessageSquare, Plus, Trash2, Menu, X, AlertOctagon, ImageIcon, Paperclip, Info, Square, Github, Linkedin, FileText, Code, ChevronDown } from 'lucide-react';
 import fluxGenLogo from './assets/images/flux_gen_logo_1779525932966.png';
+import { get, set } from 'idb-keyval';
 
 type Message = {
   id: string;
@@ -8,6 +9,9 @@ type Message = {
   content?: string;
   imageUrl?: string;
   referenceImage?: string;
+  enhancedPrompt?: string;
+  understanding?: string;
+  dimensions?: string;
   isError?: boolean;
   isLoading?: boolean;
 };
@@ -20,43 +24,52 @@ type ChatSession = {
 };
 
 export default function App() {
-  const [chats, setChats] = useState<ChatSession[]>(() => {
-    const saved = localStorage.getItem('flux_gen_chats');
-    if (saved) {
+  const [chats, setChats] = useState<ChatSession[]>([{ id: Date.now().toString(), title: 'New Generation', messages: [], createdAt: Date.now() }]);
+  const [currentChatId, setCurrentChatId] = useState<string>('');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    async function loadData() {
       try {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.length > 0) return parsed;
+        const savedChats = await get<ChatSession[]>('flux_gen_chats');
+        if (savedChats && savedChats.length > 0) {
+          setChats(savedChats);
+        }
+        
+        const savedChatId = await get<string>('flux_gen_current_chat');
+        if (savedChatId) {
+          setCurrentChatId(savedChatId);
+        }
       } catch (e) {
-        console.error('Failed to parse chats from local storage', e);
+        console.error('Failed to load data from indexedDB', e);
+      } finally {
+        setIsLoaded(true);
       }
     }
-    return [{ id: Date.now().toString(), title: 'New Generation', messages: [], createdAt: Date.now() }];
-  });
-
-  const [currentChatId, setCurrentChatId] = useState<string>(() => {
-    const savedId = localStorage.getItem('flux_gen_current_chat');
-    // Default to the first chat if not set or invalid
-    return savedId || '';
-  });
+    loadData();
+  }, []);
 
   useEffect(() => {
-    if (!currentChatId && chats.length > 0) {
+    if (!currentChatId && chats.length > 0 && isLoaded) {
       setCurrentChatId(chats[0].id);
     }
-  }, [chats, currentChatId]);
+  }, [chats, currentChatId, isLoaded]);
 
   useEffect(() => {
-    localStorage.setItem('flux_gen_chats', JSON.stringify(chats));
-  }, [chats]);
-
-  useEffect(() => {
-    if (currentChatId) {
-      localStorage.setItem('flux_gen_current_chat', currentChatId);
+    if (isLoaded) {
+      set('flux_gen_chats', chats).catch(e => console.error('Failed to save chats to indexedDB', e));
     }
-  }, [currentChatId]);
+  }, [chats, isLoaded]);
+
+  useEffect(() => {
+    if (currentChatId && isLoaded) {
+      set('flux_gen_current_chat', currentChatId).catch(e => console.error('Failed to save current chat ID to indexedDB', e));
+    }
+  }, [currentChatId, isLoaded]);
   
   const [input, setInput] = useState('');
-  const [model, setModel] = useState('flux.1-schnell');
+  const [model, setModel] = useState('qwen-image');
+  const [seed, setSeed] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
@@ -69,14 +82,19 @@ export default function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const availableModels = [
-    { id: 'flux.1-schnell', name: 'FLUX.1 Schnell' },
-    { id: 'flux.1-dev', name: 'FLUX.1 Dev' },
-    { id: 'flux.1-kontext-dev', name: 'FLUX.1 Kontext Dev' },
-    { id: 'flux.2-klein-4b', name: 'FLUX.2 Klein 4B' },
+    { id: 'qwen-image', name: 'Qwen-Image', supportsImage: false },
+    { id: 'qwen-image-edit', name: 'Qwen-Image-Edit', supportsImage: true },
+    { id: 'flux.1-dev', name: 'FLUX.1-dev', supportsImage: false },
+    { id: 'flux.1-schnell', name: 'FLUX.1-schnell', supportsImage: false },
+    { id: 'flux.1-kontext-dev', name: 'FLUX.1-Kontext-dev', supportsImage: true },
+    { id: 'flux.2-klein-4b', name: 'FLUX.2-klein-4B', supportsImage: false },
+    { id: 'stable-diffusion-3.5-large', name: 'Stable Diffusion 3.5 Large', supportsImage: false },
   ];
 
   const currentChat = chats.find(c => c.id === currentChatId) || chats[0];
-  const messages = currentChat.messages;
+  const messages = currentChat?.messages || [];
+  const selectedModelConfig = availableModels.find(m => m.id === model);
+  const supportsImage = selectedModelConfig?.supportsImage;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -182,7 +200,7 @@ export default function App() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: userPrompt, model, inputImage: currentRefImage }),
+        body: JSON.stringify({ prompt: userPrompt, model, inputImage: currentRefImage, seed: seed ? parseInt(seed, 10) : undefined }),
         signal: abortControllerRef.current.signal,
       });
 
@@ -198,7 +216,7 @@ export default function App() {
           ...c,
           messages: c.messages.map(msg => 
             msg.id === assistantMessageId 
-              ? { ...msg, isLoading: false, content: 'Generation complete.', imageUrl: data.imageUrl } 
+              ? { ...msg, isLoading: false, content: 'Generation complete.', imageUrl: data.imageUrl, enhancedPrompt: data.enhancedPrompt, understanding: data.understanding, dimensions: data.dimensions } 
               : msg
           )
         };
@@ -250,7 +268,12 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-zinc-950 font-sans text-zinc-100 overflow-hidden relative">
+    <div className="fixed inset-0 flex bg-zinc-950 font-sans text-zinc-100 overflow-hidden">
+      {/* Background glow effects */}
+      <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 -left-40 w-96 h-96 bg-purple-500/10 blur-[100px] rounded-full pointer-events-none" />
+
       
       {/* Sidebar */}
       <aside className={`absolute md:relative z-40 h-full w-[80%] md:w-72 bg-zinc-900/80 backdrop-blur-xl border-r border-zinc-800 flex flex-col transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-[120%] md:translate-x-0'}`}>
@@ -300,15 +323,15 @@ export default function App() {
       {isSidebarOpen && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" onClick={() => setIsSidebarOpen(false)}/>}
 
       {/* Main Chat Area */}
-      <main className="flex-1 h-full flex flex-col bg-zinc-950 relative z-10 w-full overflow-hidden">
+      <main className="flex-1 h-full min-h-0 flex flex-col bg-transparent relative z-10 w-full overflow-hidden">
         
         {/* Header Bar */}
-        <header className="shrink-0 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md p-4 flex items-center justify-between gap-2 z-10 w-full sticky top-0">
+        <header className="shrink-0 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md p-4 flex items-center justify-between gap-2 z-20 w-full h-[73px]">
           <div className="flex items-center gap-2 flex-shrink min-w-0">
             <button className="md:hidden p-2 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800/50 transition-colors shrink-0" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-5 h-5"/>
             </button>
-            <div className="hidden md:block truncate text-sm font-medium text-zinc-400 max-w-[200px] lg:max-w-[400px]">
+            <div className="hidden md:block truncate text-sm font-medium text-zinc-200 max-w-[200px] lg:max-w-[400px]">
               {currentChat.title}
             </div>
           </div>
@@ -322,6 +345,7 @@ export default function App() {
             >
               <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+
             <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[130px] sm:max-w-xs">
               <Settings className="hidden sm:block w-4 h-4 text-zinc-400 shrink-0" />
               <select 
@@ -396,7 +420,7 @@ export default function App() {
         </header>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-8">
+        <div className="flex-1 overflow-y-auto overscroll-none p-4 md:p-8 flex flex-col gap-8 w-full">
           {messages.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 gap-6 max-w-sm mx-auto w-full">
               <div className="w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-2xl">
@@ -453,6 +477,31 @@ export default function App() {
                       </div>
                     )}
 
+                    {message.enhancedPrompt && (
+                      <details className="mt-2 mb-2 group">
+                        <summary className="flex items-center justify-between gap-1.5 p-2 bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/10 rounded-lg cursor-pointer transition-colors text-xs font-semibold text-indigo-400 uppercase tracking-wider select-none list-none [&::-webkit-details-marker]:hidden">
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            Prompt Intelligence
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {message.dimensions && <span className="text-indigo-300/60 lowercase font-mono">{message.dimensions}</span>}
+                            <ChevronDown className="w-3.5 h-3.5 transition-transform group-open:rotate-180 opacity-60" />
+                          </div>
+                        </summary>
+                        <div className="p-3 mt-1 bg-indigo-500/5 border border-indigo-500/10 rounded-lg text-sm text-indigo-200/90 leading-relaxed max-w-prose whitespace-pre-wrap break-words">
+                          {message.understanding && (
+                            <div className="mb-3 pb-3 border-b border-indigo-500/10">
+                              <span className="block text-[10px] text-indigo-400/80 uppercase tracking-widest font-semibold mb-1">Understanding</span>
+                              {message.understanding}
+                            </div>
+                          )}
+                          <span className="block text-[10px] text-indigo-400/80 uppercase tracking-widest font-semibold mb-1">Generated Prompt</span>
+                          {message.enhancedPrompt}
+                        </div>
+                      </details>
+                    )}
+                    
                     {message.imageUrl && (
                       <div 
                         className="mt-3 relative group inline-block max-w-full rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-2xl transition-all duration-300 hover:shadow-indigo-500/10 hover:border-zinc-700 cursor-pointer"
@@ -484,7 +533,7 @@ export default function App() {
         </div>
 
         {/* Input Area */}
-        <div className="shrink-0 bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent pt-6 p-4 md:p-6 z-20 w-full relative">
+        <div className="shrink-0 bg-zinc-950/90 border-t border-zinc-900/80 backdrop-blur-md pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:py-6 p-4 md:p-6 z-20 w-full relative">
           <form onSubmit={handleSubmit} className="relative flex flex-col max-w-4xl mx-auto w-full group">
             {referenceImage && (
               <div className="relative inline-block self-start mb-3 ml-2">
@@ -501,9 +550,10 @@ export default function App() {
             <div className="relative flex items-end w-full">
               <button
                 type="button"
-                className="absolute left-2 bottom-2 shrink-0 text-zinc-400 hover:text-white p-2.5 rounded-xl transition-colors z-10 hover:bg-zinc-800/80"
-                onClick={() => document.getElementById('image-upload')?.click()}
-                title="Upload Reference Image (Required for Kontext)"
+                className={`absolute left-2 bottom-2 shrink-0 text-zinc-400 p-2.5 rounded-xl transition-colors z-10 ${supportsImage ? 'hover:text-white hover:bg-zinc-800/80' : 'opacity-50 cursor-not-allowed'}`}
+                onClick={() => supportsImage && document.getElementById('image-upload')?.click()}
+                title={supportsImage ? "Upload Reference Image" : "Current model does not support image upload"}
+                disabled={!supportsImage}
               >
                 <Paperclip className="w-5 h-5" />
               </button>
@@ -512,6 +562,7 @@ export default function App() {
                 type="file"
                 accept="image/*"
                 className="hidden"
+                disabled={!supportsImage}
                 onChange={handleImageUpload}
               />
               <textarea

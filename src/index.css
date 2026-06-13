@@ -6,10 +6,19 @@
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
-body {
+html,
+body,
+#root {
   background-color: #09090b; /* zinc-950 */
   color: #fafafa; /* zinc-50 */
   font-family: var(--font-sans);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  inset: 0;
 }
 
 ::-webkit-scrollbar {
