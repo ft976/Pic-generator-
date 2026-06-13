@@ -14,8 +14,7 @@ Respond ONLY with a valid JSON object without markdown blocks in this exact form
 {
   "prompt": "The meticulously detailed and enhanced text prompt...",
   "width": 1024,
-  "height": 1024,
-  "aspect_ratio": "1:1"
+  "height": 1024
 }`
       },
       { role: "user", content: "A cute cat" }
