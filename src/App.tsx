@@ -204,10 +204,16 @@ export default function App() {
         signal: abortControllerRef.current.signal,
       });
 
-      const data = await response.json();
+      let data: any;
+      const responseText = await response.text();
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error(`Server returned invalid JSON: ${responseText.substring(0, 100)}...`);
+      }
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate image');
+        throw new Error(data?.error || 'Failed to generate image');
       }
 
       setChats(prev => prev.map(c => {

@@ -173,7 +173,7 @@ async function generateImageBase64(prompt: string, model: string, width?: number
     else if (base64Str.startsWith('UklGR')) mimeType = 'image/webp';
     else if (base64Str.startsWith('R0lGOD')) mimeType = 'image/gif';
     
-    return \`data:\${mimeType};base64,\${base64Str}\`;
+    return `data:${mimeType};base64,${base64Str}`;
   } else {
     throw new Error("Failed to extract image from API response.");
   }
@@ -183,13 +183,13 @@ async function getImageDescription(inputImage: string, prompt: string): Promise<
   if (!process.env.GEMINI_API_KEY) return "";
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const base64Data = inputImage.replace(/^data:image\\/\\w+;base64,/, "");
-    const mimeTypeMatch = inputImage.match(/^data:(image\\/\\w+);base64,/);
+    const base64Data = inputImage.replace(/^data:image\/\w+;base64,/, "");
+    const mimeTypeMatch = inputImage.match(/^data:(image\/\w+);base64,/);
     const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : "image/jpeg";
     const response = await ai.models.generateContent({
        model: 'gemini-2.5-flash',
        contents: [
-         \`Describe this image in detail. Then, look at the user request: "\${prompt}". Explain exactly what needs to be in the final prompt to satisfy the user request while using this image as a base.\`,
+         `Describe this image in detail. Then, look at the user request: "${prompt}". Explain exactly what needs to be in the final prompt to satisfy the user request while using this image as a base.`,
          { inlineData: { data: base64Data, mimeType } }
        ]
     });
@@ -228,7 +228,7 @@ app.post("/api/generate", async (req, res) => {
       imageUrl, 
       enhancedPrompt: prompt !== originalPrompt ? prompt : undefined,
       understanding: enhancedResult.understanding,
-      dimensions: enhancedResult.width && enhancedResult.height ? \`\${enhancedResult.width}x\${enhancedResult.height}\` : enhancedResult.aspect_ratio || undefined
+      dimensions: enhancedResult.width && enhancedResult.height ? `${enhancedResult.width}x${enhancedResult.height}` : enhancedResult.aspect_ratio || undefined
     });
   } catch (error: any) {
     console.error("Error generating image:", error);
