@@ -1,183 +1,210 @@
-# 🎨 FLUX GEN - Advanced Multi-Channel AI Image Generation Hub
+# 🎨 FLUX GEN — Advanced Multi-Channel AI Image Generation Hub
 
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=white)](https://vite.dev/)
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![NVIDIA](https://img.shields.io/badge/NVIDIA_NIM-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://build.nvidia.com/)
-[![ExpressJS](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-
-An enterprise-grade, highly responsive, full-stack visual composition platform powered by **FLUX.1 (Schnell, Dev, Kontext)** and **GLM-5.1 Prompt Enhancers via NVIDIA NIM**. 
-
-FLUX GEN enables beautiful, conversational image generation both on a slick modern React UI and directly via a **Telegram Bot** channel, supported by resilient client storage and active safety fallback mechanisms.
+FLUX GEN is an enterprise-grade, highly responsive, full-stack visual studio powered by **NVIDIA NIM Generation APIs** and **Llama 3.3 Prompt Handlers**. Seamlessly bridging the gap between artistic imagination and photorealistic rendering, FLUX GEN hosts a sophisticated digital painting workflow both on a state-of-the-art client workspace and a high-concurrency **Telegram Bot** channel, supported by bulletproof local client storage and automatic API failure backdrops.
 
 ---
 
-## 📸 Page Layout & Experience
+## 📸 Interactive Layout & Experience Map
 
-Below is a visual landscape of FLUX GEN's multi-pane conversational studio interface:
+Below is a block diagram illustrating FLUX GEN's workspace. Synthesized from modern off-black obsidian styling, the view presents a single-screen responsive panel engineered to optimize space and minimize noise.
 
 ```
-+---------------------------------------------------------------------------------------+
-|  🎨 FLUX GEN  [Active: FLUX.1 Dev]                                    ℹ️ About  ⚙️ Config |
-+---------------------------------------------------------------------------------------+
-|  📁 SESSIONS      |  💬 ACTIVE CONVERSATION CONTEXT                                    |
-|                   |                                                                   |
-|  +-------------+  |  [User]: "Retro 1970s living room camera photo, polaroid style"   |
-|  | New Studio  |  |                                                                   |
-|  +-------------+  |  🤖 [Enhancing Prompt via GLM-5.1 Model...]                       |
-|                   |  ↳ "Professional RAW photo, authentic film grain, warm Kodak       |
-|  - Cosplay Shoot  |     Portra tones, faded chromatic colors, volumetric lens flare   |
-|  - Synth Background|    shot on 35mm, highly detailed texture, nostalgic..."          |
-|  - Retro Living   |                                                                   |
-|  - Cyberpunk City |  🎨 [Generating Image using Selected FLUX Model...]               |
-|                   |  +-------------------------------------------------------------+  |
-|                   |  |                                                             |  |
-|                   |  |                 [ GENERATED HIGH-FI IMAGE ]                 |  |
-|                   |  |                                                             |  |
-|                   |  +-------------------------------------------------------------+  |
-|                   |  [⬇️ Download JPG]   [📐 1280x768]                     [⚙️ Seed: 4920] |
-+-------------------+-------------------------------------------------------------------+
-| 📎 [Reference]    |  ✍️ Enter a prompt or describe a scenery...         [⚡ Enhance] [▶]  |
-+---------------------------------------------------------------------------------------+
++---------------------------------------------------------------------------------------------------------+
+|  🎨 FLUX GEN  [Active: FLUX.1 Dev]                                                    ℹ️ Info  ⚙️ Config |
++---------------------------------------------------------------------------------------------------------+
+|  📁 GENERATIONS     |  💬 ACTIVE STUDIO SPACE                                                           |
+|                     |                                                                                   |
+|  +---------------+  |  [User]: "Retro 1970s living room camera photo, polaroid style, volumetric lens"  |
+|  |  New Studio   |  |                                                                                   |
+|  +---------------+  |  🤖 [Prompt Optimizer: meta/llama-3.3-70b-instruct]                              |
+|                     |  ↳ "Professional RAW photo, authentic film grain, ultra-realistic portrait,       |
+|  - Cosplay Shoot    |     Kodak Portra, vintage warmth, shot on 35mm lens, sharp focus, masterpiece"    |
+|  - Synth Background |                                                                                   |
+|  - Retro Living     |  🎨 [Generating Image via black-forest-labs/flux.1-dev...]                       |
+|  - Cyberpunk City   |  +-----------------------------------------------------------------------------+  |
+|                     |  |                                                                             |  |
+|                     |  |                          [ GENERATED MASTERPIECE ]                          |  |
+|                     |  |                                                                             |  |
+|                     |  +-----------------------------------------------------------------------------+  |
+|                     |  [⬇️ Download JPG]   [📐 1280x768]                                 [⚙️ Seed: 25482] |
++---------------------+-----------------------------------------------------------------------------------+
+| 📎 [Reference Img]  |  ✍️ Enter a prompt or describe a scenery...                         [⚡ Enhance] [▶]  |
++---------------------------------------------------------------------------------------------------------+
 ```
+
+### 💎 Key Visual Panels
+1. **Dynamic Left-Rail Drawer**: An expandable viewport capturing historic generation contexts. Includes an intuitive, zero-confirm pop-up modal to wipe records clean.
+2. **Interactive Configuration Bar**: Features a responsive dropdown select-menu for active models, direct configuration triggers for active prompt enhancement, and creator metadata sheets.
+3. **Visual Active Studio**: A flowing conversational feed tracking input requests, multimodal prompt intelligence, and progressive load states.
+4. **Interactive Prompt Console**: Combines a multi-line auto-expanding text box, reference-image upload listeners, prompt optimization toggles, and cancellation triggers.
 
 ---
 
-## ⚡ Key Capabilities & Core Strengths
+## ⚡ Core Architecture Capabilities
 
-FLUX GEN elevates plain textual descriptions into production-ready photographics and realistic illustrations, leveraging full stack pipeline improvements:
+FLUX GEN implements premium features to provide low-latency performance and high reliability:
 
-*   **🧠 Enhanced 3-Step Prompt Optimizer (GLM-5.1 / GPT-styled)**
-    Our prompt engineering pipeline has been upgraded to a structured 3-Step system that expands simple user concepts into hyper-detailed descriptions:
-    *   **Step 1 — Analyze & Choose Dimensions**: Dynamically fits compositions to the gold-standard aspects (`1024x1024`, `1280x768`, `768x1280`, `1152x896`, `896x1152`).
-    *   **Step 2 — Structured Expansion**: Formats prompts with rigorous sections including **[SUBJECT]**, **[ENVIRONMENT]**, **[LIGHTING]**, **[CAMERA & LENS]**, **[STYLE & RENDERING]**, **[QUALITY ANCHORS]**, **[COLOR PALETTE]**, and **[NEGATIVE SPACE / COMPOSITION]** for supreme diffusion outcomes.
-    *   **Step 3 — Precise Output Structure**: Delivers clean, un-censored, and un-truncated outputs directly. See [prompt_enhancer_instructions.md](./prompt_enhancer_instructions.md) for the complete reference file.
-*   **🛡️ Resilient Intelligent Safety fallbacks**
-    Image generation filters can sometimes be overprotective. When an optimized prompt triggers a safety block, FLUX GEN automatically and silently falls back to your original base description, preventing unnecessary "blocked content" errors!
-*   **📎 High-Fidelity Image-to-Image (Vision Guided)**
-    Upload an reference image and supply a prompt. The server utilizes a multimodal descriptor (`gemini-2.5-flash`) to generate detailed guides, directing the downstream FLUX model to morph concepts with pixel-perfect intent.
-*   **💾 High-Capacity Storage System (IndexedDB Proxy)**
-    Never worry about standard browser `localStorage` quotas (typically restricted to 5MB, which easily crashes when keeping many rich image history sheets). FLUX GEN stores chat payloads, seeds, custom configurations, and generated base64 assets safely in **IndexedDB** using advanced asynchronous key-value mappings.
-*   **📠 Multi-Channel Support (Telegram Bot + Web portal)**
-    Run a full-featured Telegram bot in parallel. Select models straight from Telegram inline buttons, write prompts on-the-go, and receive base64-generated masterpieces directly in your chat screen with beautiful Markdown details.
+*   **🧠 Intelligent Prompt Optimizer (Llama 3.3 Instruct)**
+    FLUX GEN automatically routes raw textual inputs to the `meta/llama-3.3-70b-instruct` engine via NVIDIA NIM. The prompt engineering pipeline transforms simple definitions into elaborate professional prompts containing camera profiles (`35mm lens`), color grades (`Kodak Portra warmth`), spatial metrics, and photographic guidelines (`8k resolution, ultra-realistic, sharp focus`).
+*   **👁️ Multimodal Vision Assistance (Llama 3.2 Vision)**
+    In image-to-image mode (supported on selected models such as `FLUX.1-Kontext-dev` and `Qwen-Image-Edit`), reference images are described using a background vision agent (`meta/llama-3.2-11b-vision-instruct`). The vision descriptor produces dense contextual guides that allow the generator to modify concepts with pixel-perfect fidelity.
+*   **🛡️ Active Safety Fallbacks & Graceful Recovery**
+    AI pipelines are prone to strict network timeouts or overprotective prompt filters. If NVIDIA returns a safety reject on optimized prompts, FLUX GEN automatically and silently falls back to your original source description, resolving the request without disrupting the generation flow.
+*   **🔬 Universal Fallback Pipeline**
+    If any primary target endpoint stalls or encounters rate limits, the system drops back to `black-forest-labs/flux.1-schnell` with a baseline 4-step generation layout on a guaranteed endpoint, preventing downtime.
+*   **💾 Infinite Client Storage (idb-keyval)**
+    Standard browser `localStorage` restricts payloads to 5MB, which will crash when trying to save complex base64 images or lengthy chat streams. FLUX GEN implements asynchronous key-value persistence on **IndexedDB**, supporting thousands of generation histories without data loss or UI freezes.
+*   **📠 Dual-Channel Bot integration**
+    FLUX GEN integrates a high-concurrency Telegram Bot channel that runs concurrently with your web application. Users can set models via inline keyboard callback selectors, submit descriptions, and receive beautiful markdown descriptions with their output photo in seconds.
 
 ---
 
-## 🏗️ System Architecture & Data Flow
+## 🏗️ Data Flow & System Topology
 
-FLUX GEN implements a robust full-stack model to protect secrets, stream state changes, and avoid browser-side credential leaks.
+The system uses a full-stack modular architecture, keeping development APIs hidden and routing requests safely behind server-side proxies:
 
 ```
-                    +-------------------------------+
-                    |     User Interface (Web)      |
-                    +---------------+---------------+
-                                    |
-                                    | (JSON POST /api/generate)
-                                    v
-+------------------+  HTTP  +---------------+---------------+  NVIDIA API  +--------------------------+
-|  Telegram Client +------->|     Express Backend Server    +------------->| NVIDIA NIM GenAI API     |
-+------------------+        |  (API Handlers / BOT Engine)  |              | - FLUX.1 models          |
-                            +---------------+---------------+              | - GLM-5.1 Optimizer      |
-                                            |                              +--------------------------+
-                                            | (Vision context checks)
-                                            v
-                                    +---------------+---------------+
-                                    |     Gemini 2.5 Flash API      |
-                                    |      (Image Descriptions)     |
-                                    +-------------------------------+
+                                  +-----------------------------+
+                                  |     User Interface (Web)    |
+                                  +--------------+--------------+
+                                                 |
+                                                 | (POST /api/generate)
+                                                 v
++-----------------------+              +-----------------+             +--------------------------+
+|  Telegram Messenger   +------------->+  Express Server +------------>+ NVIDIA NIM Endpoint API  |
+|  (Inline Interaction) | (Webhooks)   | (Proxy Engine)  | (TLS JSON)  | - Llama 3.3 Promoter     |
+|                       |              +--------+--------+             | - Llama 3.2 Descriptor   |
++-----------------------+                       |                      | - Black Forest FLUX      |
+                                                |                      | - Stability SD 3.5 Large |
+                                                v                      +--------------------------+
+                                     +----------+----------+
+                                     |  Local IndexedDB    |
+                                     |  (Client-Side Caching)
+                                     +---------------------+
 ```
 
 ---
 
-## ⚙️ Environment Variables Setup
+## 🛠️ Supported Image Models & Specifications
 
-Create a `.env` file or provide these variables in your hosting environment (e.g. Vercel, Cloud Run, Heroku):
+Developers can choose from several text-to-image and image-to-image models directly through the UI:
+
+| Model ID | Public Brand | Provider / Vendor | Class / Core Focus | Input Media Supported |
+| :--- | :--- | :--- | :--- | :---: |
+| `qwen-image` | Qwen Image | Alibaba Cloud | Text-to-Image baseline | Text Only |
+| `qwen-image-edit` | Qwen Image Edit | Alibaba Cloud | Vision-guided modification | Text & Base64 Image |
+| `flux.1-dev` | FLUX.1 Dev | Black Forest Labs | Photographic precision | Text Only |
+| `flux.1-schnell` | FLUX.1 Schnell | Black Forest Labs | Lightning-fast generation | Text Only |
+| `flux.1-kontext-dev` | FLUX.1 Kontext Dev | Black Forest Labs | In-context image synthesis | Text & Base64 Image |
+| `flux.2-klein-4b` | FLUX.2 Klein 4B | NVIDIA AI | Cost-effective generation | Text Only |
+| `stable-diffusion-3.5-large` | Stable Diffusion Large | Stability AI | Atmospheric lighting & composition | Text Only |
+
+### 📐 Dynamic Aspect Ratio Matrix
+The Prompt Optimizer dynamically resolves user requests into one of these five maximum-compatibility resolutions:
+
+*   **1:1 Square**: `1024 x 1024` (Excellent for avatars, profile badges, and metadata)
+*   **16:9 Landscape**: `1280 x 768` (Perfect for displays, YouTube thumbnails, and cinematic landscape graphics)
+*   **9:16 Portrait**: `768 x 1280` (Optimized for mobile interfaces, TikTok screens, and stories)
+*   **4:3 Classical**: `1152 x 896` (Ideal for publication art, printing frames, and grid portfolios)
+*   **3:4 Editorial**: `896 x 1152` (Tailored for magazine print styling and vertical framing)
+
+---
+
+## ⚙️ Environment Configuration
+
+Define these variables in your host environment or inside a local `.env` file:
 
 ```env
 # NVIDIA NIM API Authentication (Mandatory)
-NVIDIA_API_KEY=nvapi-your-nvidia-developer-nim-key-here
+NVIDIA_API_KEY=nvapi-your-nvidia-developer-key-here
 
-# Google Gemini API key (Required for Image-to-Image / Vision context)
-GEMINI_API_KEY=AIzaSy...
-
-# Telegram Bot Integration (Optional - Telegram Bot will start if supplied)
-TELEGRAM_BOT_TOKEN=74492...
+# Telegram Bot Integration API Token (Optional)
+# If supplied, the Express app automatically starts the Telegram Polling/Webhook interface
+TELEGRAM_BOT_TOKEN=744926521...
 ```
 
 ---
 
-## 🚀 Installation & Local Development
+## 📦 Local Installation & Setup
 
-Set up your workspace in just three simple commands:
+Execute these commands to clone the codebase and start your local workstation:
 
-1.  **Clone the repository & install dependencies**
+1.  **Clone the workspace and install standard dependencies**
     ```bash
     npm install
     ```
 
-2.  **Initialize the Full-Stack Developer Ecosystem**
+2.  **Spin up the integrated Full-Stack Development Server**
     ```bash
     npm run dev
     ```
-    This sets up a unified, hot-reloading pipeline hosting both the frontend Vite workspace and the backend Node.js compiler scripts on port `3000`.
+    This initializes a server using `tsx` running on host `0.0.0.0` and port `3000`. The server mounts the backend routes and exposes the local Vite middleware for the client.
 
 3.  **Compile & bundle for production**
     ```bash
     npm run build
     ```
-    Creates a minified client package inside `/dist` and compiles a standalone, optimized ES/CJS bundle of `server.ts` to `/dist/server.cjs` for lightning-fast container cold starts on Google Cloud Run or AWS.
+    This compiles the web app using `vite build` (saving output in `dist/`) and bundles `server.ts` into a standalone, optimized ES/CJS CommonJS bundle inside `dist/server.cjs` using `esbuild`.
 
 ---
 
-## 🪵 Supported Resolutions Matrix
+## 🚀 Cloud Run & Vercel Deployment
 
-The Prompt Enhancement Engine is fine-tuned to automatically negotiate and supply these exact, maximum-compatibility high-dimension resolution pairs depending on your intent:
-
-| Aspect Ratio | Dimensions | Suggested Use Case |
-| :---: | :---: | :--- |
-| **1:1** | `1024 x 1024` | Social posts, profile avatars, icons |
-| **16:9** | `1280 x 768` | Cinematic landscapes, standard monitors, YouTube banners |
-| **9:16** | `768 x 1280` | Smartphone wallpaper, Instagram stories, TikTok screens |
-| **4:3** | `1152 x 896` | Classical photography prints, bento grid illustrations |
-| **3:4** | `896 x 1152` | Editorial style, magazine covers, vertical portraits |
-
----
-
-## ☁️ Continuous Serverless Deployment
-
-### Deploying to Cloud Run (Containerized)
-The production start command resolves directly inside Node.js:
-```json
-"start": "node dist/server.cjs"
+### 🐳 Google Cloud Run (Containerized)
+The repository is fully configured for container hosting. The build-system maps the production startup command directly using:
+```bash
+npm run start
 ```
-Ensure your server hooks up on host `0.0.0.0` and port `3000` (which is already configured in `server.ts`), enabling seamless container orchestration.
+This runs the compiled node bundle: `node dist/server.cjs`, listening on all interfaces (`0.0.0.0`) on standard port `3000`.
 
-### Deploying to Vercel (Serverless Functions)
-Deploy with single command using any standard Vercel environment:
-*   Configure the deployment to use the **Vite project preset**.
-*   Vercel reads the root `vercel.json` file to route endpoints cleanly to the serverless server under `/api/index.ts`.
-*   Ensure the `NVIDIA_API_KEY` and `GEMINI_API_KEY` variables are specified in your **Vercel Project Settings -> Environment Variables** panel.
+### ⚡ Vercel serverless (Edge Execution)
+The repository includes configuration to deploy to Vercel without a custom server. Vercel uses the configuration inside `vercel.json` and routes APIs down to our serverless endpoints under `/api`:
+
+1. Import your project directory into your Vercel Dashboard.
+2. Select the **Vite** project preset.
+3. Add your environment variables (`NVIDIA_API_KEY`, `TELEGRAM_BOT_TOKEN`) in the Vercel Settings portal.
+4. Let Vercel deploy! Routing is configured automatically via `/api/index.ts` and `/api/telegram.ts`.
 
 ---
 
-## 🎓 Technology Stack & Highlights
+## 📂 Codebase File Tree
 
-*   **Vite 6 / React 18 / TypeScript** - Fully responsive, low-latency client-side engine.
-*   **idb-keyval** - IndexedDB wrapper to bypass standard LocalStorage limit failures.
-*   **Tailwind CSS 4** - Beautiful dark obsidian design system with responsive sidebar rails and custom backdrops.
-*   **Lucide Icons** - Modern, crisp svg vector symbols.
-*   **Express Router** - High-concurrency backend layer with integrated Telegram bot polling hooks.
+The repository uses a modular structure to keep the codebase easy to maintain:
+
+```
+.
+├── .env.example              # Template for API keys
+├── .gitignore                # Untracked files and build assets
+├── README.md                 # Technical documentation
+├── index.html                # Vite SPA layout mountpoint
+├── metadata.json             # App permissions and metadata specifications
+├── package.json              # App manifests, scripts, and package indices
+├── tsconfig.json             # Engine configuration rules for TypeScript
+├── vercel.json               # Serverless Routing Rules for Vercel
+├── vite.config.ts            # Client module resolution rules & CSS setups
+├── server.ts                 # Full-stack dev entrypoint & Express/Telegram server
+├── api/                      # Serverless api directory (Vercel)
+│   ├── index.ts              # API proxy handler
+│   └── telegram.ts           # Bot handler for webhooks
+└── src/                      # Frontend client workspace
+    ├── App.tsx               # Main application component
+    ├── index.css             # Global tailwind styling definitions
+    ├── main.tsx              # React mounting script
+    ├── vite-env.d.ts         # Global asset type references
+    └── assets/               # Local static images
+```
 
 ---
 
 ## 👨‍💻 Created & Authored By
 
-**Rehan Ahmad**
-*   **Email:** [rehan515ahmad@gmail.com](mailto:rehan515ahmad@gmail.com)
-*   **LinkedIn:** [Rehan Ahmad](https://www.linkedin.com/in/rehan-ahmad-863386382)
-*   **GitHub:** [Ft976 Profiles](https://github.com/Ft976)
-*   **Projects Workspace:** [Explore more repositories](https://github.com/Ft976?tab=repositories)
+**Rehan Ahmad**  
+Let's connect, collaborate, and build next-generation visual frameworks together!
+
+*   **Email**: [rehan515ahmad@gmail.com](mailto:rehan515ahmad@gmail.com)
+*   **LinkedIn**: [Rehan Ahmad](https://www.linkedin.com/in/rehan-ahmad-863386382?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+*   **GitHub**: [Ft976 Profiles](https://github.com/Ft976)
+*   **Project Portfolio**: [Explore other Repositories](https://github.com/Ft976?tab=repositories)
 
 ---
-*Developed with meticulous digital craftsmanship. Enjoy creating high-end imagery with FLUX GEN!*
+*Created with digital craftsmanship. Have fun visualizing your thoughts in ultra-high resolution!*
