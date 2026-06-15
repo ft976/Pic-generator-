@@ -67,44 +67,25 @@ Respond ONLY with a valid JSON object without markdown blocks in this exact form
   return { prompt: originalPrompt };
 }
 
+function getFullModelName(model: string): string {
+  if (model.includes("/")) return model;
+  if (model === "flux.1-schnell") return "black-forest-labs/flux.1-schnell";
+  if (model === "flux.1-dev") return "black-forest-labs/flux.1-dev";
+  if (model === "flux.1-kontext-dev") return "black-forest-labs/flux.1-kontext-dev";
+  if (model === "flux.2-klein-4b") return "nvidia/flux.2-klein-4b";
+  if (model === "stable-diffusion-3.5-large") return "stabilityai/stable-diffusion-3.5-large";
+  if (model === "qwen-image") return "alibaba/qwen-image";
+  if (model === "qwen-image-edit") return "alibaba/qwen-image-edit";
+  
+  if (model.includes("sdxl") || model.includes("stable-diffusion")) return `stabilityai/${model}`;
+  if (model.includes("qwen")) return `alibaba/${model}`;
+  if (model.includes("flux")) return `black-forest-labs/${model}`;
+  return model;
+}
+
 async function generateImageBase64(prompt: string, model: string, width?: number, height?: number, aspect_ratio?: string, seed?: number, inputImage?: string): Promise<string> {
-  // Gracefully fallback unsupported UI models to known working ones on NVIDIA NIM
-  let actualModel = model;
-  if (model === "qwen-image" || model === "qwen-image-edit" || model === "stable-diffusion-3.5-large" || model === "flux.1-kontext-dev" || model === "flux.2-klein-4b" || model === "flux.1-dev") {
-    // If the account doesn't have access or model isn't active, default to fastest stable model
-    actualModel = "flux.1-schnell";
-  }
-
-  if (!actualModel.includes("flux") && !actualModel.includes("nv-") && !actualModel.includes("sdxl") && !actualModel.includes("stable-diffusion") && !actualModel.includes("qwen")) {
-    throw new Error(`Model ${actualModel} is not yet integrated.`);
-  }
-
   if (!process.env.NVIDIA_API_KEY) {
     throw new Error("NVIDIA_API_KEY is not configured");
-  }
-  
-  let vendor = "black-forest-labs";
-  if (actualModel.includes("nv-")) vendor = "nvidia";
-  if (actualModel.includes("sdxl") || actualModel.includes("stable-diffusion")) vendor = "stabilityai";
-  if (actualModel.includes("qwen")) vendor = "alibaba";
-  
-  const invokeUrl = `https://ai.api.nvidia.com/v1/genai/${vendor}/${actualModel}`;
-  const headers = {
-      "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-  };
-  
-  const payload: any = {
-    prompt: prompt,
-  };
-  
-  if (seed !== undefined && seed !== null && seed !== 0 && !Number.isNaN(seed)) {
-      payload.seed = seed;
-  }
-  
-  if (inputImage) {
-      payload.image = inputImage;
   }
 
   let targetWidth = width;
@@ -133,89 +114,135 @@ async function generateImageBase64(prompt: string, model: string, width?: number
   targetWidth = targetWidth || 1024;
   targetHeight = targetHeight || 1024;
 
-  if (actualModel === "flux.2-klein-4b") {
+  let actualModel = model;
+  const fullModelName = getFullModelName(actualModel);
+  let vendor = "black-forest-labs";
+  let shortModelName = actualModel;
+  
+  if (fullModelName.includes("/")) {
+    const parts = fullModelName.split("/");
+    vendor = parts[0];
+    shortModelName = parts[1];
+  } else {
+    if (actualModel.includes("sdxl") || actualModel.includes("stable-diffusion")) vendor = "stabilityai";
+    if (actualModel.includes("qwen")) vendor = "alibaba";
+    if (actualModel.includes("nv-") || actualModel.includes("flux.2-klein-4b")) vendor = "nvidia";
+  }
+
+  const invokeUrl = `https://ai.api.nvidia.com/v1/genai/${vendor}/${shortModelName}`;
+
+  try {
+    console.log(`[NVIDIA API] Requesting ${invokeUrl} for model: ${actualModel}`);
+    const payload: any = {
+      prompt: prompt
+    };
+
+    if (seed !== undefined && seed !== null && seed !== 0 && !Number.isNaN(seed)) {
+      payload.seed = seed;
+    }
+
+    if (inputImage) {
+      payload.image = inputImage;
+    }
+
+    // Adapt payload parameters per model
+    if (shortModelName === "flux.1-schnell") {
       payload.width = targetWidth;
       payload.height = targetHeight;
       payload.steps = 4;
-  } else if (actualModel === "flux.1-schnell") {
-      delete payload.aspect_ratio;
-      // NVIDIA NIM API for flux.1-schnell likely expects width and height, or doesn't support aspect_ratio
-      payload.width = targetWidth;
-      payload.height = targetHeight;
-      payload.steps = 4;
-  } else if (actualModel === "flux.1-dev") {
+    } else if (shortModelName === "flux.1-dev") {
       payload.width = targetWidth;
       payload.height = targetHeight;
       payload.mode = "base";
-      payload.cfg_scale = 3.5;
-      payload.steps = 50;
-  } else if (actualModel === "flux.1-kontext-dev" || actualModel === "flux-dev-image-to-image") {
-      delete payload.width;
-      delete payload.height;
       payload.steps = 30;
-      payload.cfg_scale = 3.5;
-  }
+    } else if (shortModelName === "flux.1-kontext-dev") {
+      payload.aspect_ratio = aspect_ratio || "match_input_image";
+    } else if (shortModelName.includes("stable-diffusion-3.5")) {
+      payload.width = targetWidth;
+      payload.height = targetHeight;
+    }
 
-  let response;
-  let retries = 2;
-  while (retries > 0) {
-    try {
-      response = await fetch(invokeUrl, {
-          method: "post",
-          body: JSON.stringify(payload),
-          headers: headers
-      });
-      break;
-    } catch (err: any) {
-      retries--;
-      if (retries === 0) {
-        throw new Error(`Failed to connect to image generation API: ${err.message}`);
+    const response = await fetch(invokeUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      const data: any = await response.json();
+      const base64Str = extractBase64(data);
+      if (base64Str) {
+        return formatBase64(base64Str);
       }
-      await new Promise(res => setTimeout(res, 1000));
+    } else {
+      const errorText = await response.text();
+      console.warn(`[NVIDIA API] Primary endpoint ${actualModel} returned status ${response.status}: ${errorText}`);
     }
+  } catch (err: any) {
+    console.warn(`[NVIDIA API] Primary endpoint ${actualModel} failed: ${err.message}`);
   }
 
-  if (!response || response.status !== 200) {
-    const errBody = response ? await response.text() : "No response";
-    throw new Error(`NVIDIA API Error: ${response?.status || 'Unknown'} ${errBody}`);
-  }
+  // Graceful fallback to flux.1-schnell on active known URL
+  console.log(`[NVIDIA API] Falling back to black-forest-labs/flux.1-schnell...`);
+  try {
+    const fallbackUrl = "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell";
+    const payload: any = {
+      prompt: prompt,
+      width: targetWidth,
+      height: targetHeight,
+      steps: 4
+    };
 
-  const data: any = await response.json();
-  
-  if (data.artifacts && data.artifacts[0] && (data.artifacts[0].finishReason === "CONTENT_FILTERED" || data.artifacts[0].finish_reason === "CONTENT_FILTERED")) {
-    throw new Error("Generation was blocked by the safety filter. Please try a different prompt.");
-  }
-  if (data.data && data.data[0] && (data.data[0].finishReason === "CONTENT_FILTERED" || data.data[0].finish_reason === "CONTENT_FILTERED")) {
-    throw new Error("Generation was blocked by the safety filter. Please try a different prompt.");
-  }
-
-  let base64Str = "";
-  if (data.image) {
-     base64Str = data.image;
-  } else if (data.data && data.data[0] && data.data[0].b64_json) {
-     base64Str = data.data[0].b64_json;
-  } else if (data.artifacts && data.artifacts[0] && data.artifacts[0].base64) {
-     base64Str = data.artifacts[0].base64;
-  }
-
-  if (base64Str) {
-    if (base64Str.startsWith('data:')) return base64Str;
-    
-    // Check if the image might be a fully black/filtered placeholder (usually very small base64)
-    if (base64Str.length < 10000) {
-      throw new Error("Safety filter tripped: API returned a black screen/empty image. Try modifying your prompt.");
+    if (seed !== undefined && seed !== null && seed !== 0 && !Number.isNaN(seed)) {
+      payload.seed = seed;
     }
-    
-    let mimeType = 'image/jpeg';
-    if (base64Str.startsWith('iVBORw0KGgo')) mimeType = 'image/png';
-    else if (base64Str.startsWith('/9j/')) mimeType = 'image/jpeg';
-    else if (base64Str.startsWith('UklGR')) mimeType = 'image/webp';
-    else if (base64Str.startsWith('R0lGOD')) mimeType = 'image/gif';
-    
-    return `data:${mimeType};base64,${base64Str}`;
-  } else {
-    throw new Error("Failed to extract image from API response.");
+
+    const response = await fetch(fallbackUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      const data: any = await response.json();
+      const base64Str = extractBase64(data);
+      if (base64Str) {
+        return formatBase64(base64Str);
+      }
+    } else {
+      const errorText = await response.text();
+      throw new Error(`NVIDIA API Fallback failed with status ${response.status}: ${errorText}`);
+    }
+  } catch (err: any) {
+    throw new Error(`Image generation failed: ${err.message}`);
   }
+
+  throw new Error("Failed to generate image.");
+}
+
+function extractBase64(data: any): string | null {
+  if (data.image) return data.image;
+  if (data.data && data.data[0] && data.data[0].b64_json) return data.data[0].b64_json;
+  if (data.artifacts && data.artifacts[0] && data.artifacts[0].base64) return data.artifacts[0].base64;
+  return null;
+}
+
+function formatBase64(base64Str: string): string {
+  if (base64Str.startsWith('data:')) return base64Str;
+  let mimeType = 'image/jpeg';
+  if (base64Str.startsWith('iVBORw0KGgo')) mimeType = 'image/png';
+  else if (base64Str.startsWith('/9j/')) mimeType = 'image/jpeg';
+  else if (base64Str.startsWith('UklGR')) mimeType = 'image/webp';
+  else if (base64Str.startsWith('R0lGOD')) mimeType = 'image/gif';
+  return `data:${mimeType};base64,${base64Str}`;
 }
 
 async function startServer() {
@@ -359,15 +386,20 @@ async function startServer() {
   // API endpoint for image generation
   app.post("/api/generate", async (req, res) => {
     try {
-      const { prompt: originalPrompt, model, seed, inputImage } = req.body;
+      const { prompt: originalPrompt, model, seed, inputImage, enhancePrompt } = req.body;
       
-      let imageDescription = "";
-      if (inputImage) {
-          imageDescription = await getImageDescription(inputImage, originalPrompt);
+      let prompt = originalPrompt;
+      let enhancedResult: {prompt: string, understanding?: string, width?: number, height?: number, aspect_ratio?: string} = { prompt: originalPrompt };
+      
+      if (enhancePrompt !== false) {
+          let imageDescription = "";
+          if (inputImage) {
+              imageDescription = await getImageDescription(inputImage, originalPrompt);
+          }
+          
+          enhancedResult = await enhancePromptWithNvidia(originalPrompt, imageDescription);
+          prompt = enhancedResult.prompt;
       }
-      
-      const enhancedResult = await enhancePromptWithNvidia(originalPrompt, imageDescription);
-      const prompt = enhancedResult.prompt;
 
       let imageUrl;
       try {

@@ -76,6 +76,7 @@ export default function App() {
   const [selectedImage, setSelectedImage] = useState<{url: string, id: string} | null>(null);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [usePromptEnhancer, setUsePromptEnhancer] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -200,7 +201,7 @@ export default function App() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: userPrompt, model, inputImage: currentRefImage, seed: seed ? parseInt(seed, 10) : undefined }),
+        body: JSON.stringify({ prompt: userPrompt, model, inputImage: currentRefImage, seed: seed ? parseInt(seed, 10) : undefined, enhancePrompt: usePromptEnhancer }),
         signal: abortControllerRef.current.signal,
       });
 
@@ -398,6 +399,24 @@ export default function App() {
                         <span>Workspace</span>
                         <span className="text-zinc-300">Personal</span>
                       </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 mb-4 pb-4 border-b border-zinc-800">
+                      <span className="text-[10px] font-bold tracking-wider text-zinc-500 uppercase px-1 mb-1">Preferences</span>
+                      <button
+                        type="button"
+                        onClick={() => setUsePromptEnhancer(!usePromptEnhancer)}
+                        className="flex items-center justify-between w-full hover:bg-zinc-800/50 px-2 py-2 rounded-lg transition-colors text-zinc-300 hover:text-white"
+                        title={usePromptEnhancer ? "Prompt Enhancer is enabled" : "Prompt Enhancer is disabled"}
+                      >
+                        <div className="flex items-center gap-2.5 text-sm font-medium">
+                          <Sparkles className={`w-4 h-4 transition-colors ${usePromptEnhancer ? 'text-amber-400' : 'text-zinc-500'}`} />
+                          <span>Enhance Prompts</span>
+                        </div>
+                        <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-200 flex items-center ${usePromptEnhancer ? 'bg-indigo-600' : 'bg-zinc-700'}`}>
+                          <div className={`w-3 h-3 rounded-full bg-white transition-all duration-200 transform ${usePromptEnhancer ? 'translate-x-4' : 'translate-x-0'}`} />
+                        </div>
+                      </button>
                     </div>
                     
                     <div className="flex flex-col gap-1.5">
