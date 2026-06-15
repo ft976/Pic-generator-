@@ -48,8 +48,11 @@ Below is a visual landscape of FLUX GEN's multi-pane conversational studio inter
 
 FLUX GEN elevates plain textual descriptions into production-ready photographics and realistic illustrations, leveraging full stack pipeline improvements:
 
-*   **🧠 Intelligent Prompt Optimizer (GLM-5.1)**
-    No more guessing complex camera lenses or stylistic keywords. When you send a prompt, a background LLM (`z-ai/glm-5.1` via NVIDIA NIM) parses your idea, identifies the context, recommends compatible layouts (such as 16:9, 4:3, or 1:1 square), and enriches it with cinematic lighting formulas.
+*   **🧠 Enhanced 3-Step Prompt Optimizer (GLM-5.1 / GPT-styled)**
+    Our prompt engineering pipeline has been upgraded to a structured 3-Step system that expands simple user concepts into hyper-detailed descriptions:
+    *   **Step 1 — Analyze & Choose Dimensions**: Dynamically fits compositions to the gold-standard aspects (`1024x1024`, `1280x768`, `768x1280`, `1152x896`, `896x1152`).
+    *   **Step 2 — Structured Expansion**: Formats prompts with rigorous sections including **[SUBJECT]**, **[ENVIRONMENT]**, **[LIGHTING]**, **[CAMERA & LENS]**, **[STYLE & RENDERING]**, **[QUALITY ANCHORS]**, **[COLOR PALETTE]**, and **[NEGATIVE SPACE / COMPOSITION]** for supreme diffusion outcomes.
+    *   **Step 3 — Precise Output Structure**: Delivers clean, un-censored, and un-truncated outputs directly. See [prompt_enhancer_instructions.md](./prompt_enhancer_instructions.md) for the complete reference file.
 *   **🛡️ Resilient Intelligent Safety fallbacks**
     Image generation filters can sometimes be overprotective. When an optimized prompt triggers a safety block, FLUX GEN automatically and silently falls back to your original base description, preventing unnecessary "blocked content" errors!
 *   **📎 High-Fidelity Image-to-Image (Vision Guided)**
